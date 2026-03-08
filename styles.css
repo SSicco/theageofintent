@@ -1,0 +1,243 @@
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body, h1, h2, h3, h4, h5, h6 {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  color: #e0e0e0;
+  background: #1a1a2e;
+}
+
+p, li, h1, h2, h3 {
+  overflow-wrap: break-word;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.sidebar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 250px;
+  height: 100vh;
+  background: #0f0f1a;
+  padding: 2rem 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  z-index: 100;
+  overflow-y: auto;
+}
+
+.sidebar-title {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #ffffff;
+  margin-bottom: 1.5rem;
+  display: block;
+}
+
+.sidebar a {
+  display: block;
+  padding: 0.5rem 0.5rem;
+  font-size: 0.9rem;
+  color: #a0a0b8;
+  border-radius: 4px;
+  transition: color 0.2s, background 0.2s;
+}
+
+.sidebar a:hover {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.sidebar a.active {
+  color: #ffffff;
+  font-weight: 600;
+}
+
+.hamburger {
+  display: none;
+  position: fixed;
+  top: 1rem;
+  left: 1rem;
+  z-index: 200;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+}
+
+.hamburger svg {
+  width: 28px;
+  height: 28px;
+  fill: #ffffff;
+}
+
+.hamburger .icon-close {
+  display: none;
+}
+
+.content {
+  margin-left: 250px;
+  min-height: 100vh;
+}
+
+.article {
+  max-width: 700px;
+  margin: 0 auto;
+  padding: 3rem 1.5rem;
+}
+
+.article h1 {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #ffffff;
+  margin-bottom: 2rem;
+  line-height: 1.3;
+}
+
+.article h2 {
+  font-size: 1.4rem;
+  font-weight: 600;
+  color: #ffffff;
+  margin-top: 2.5rem;
+  margin-bottom: 1rem;
+  line-height: 1.3;
+}
+
+.article h3 {
+  font-size: 1.15rem;
+  font-weight: 600;
+  color: #d0d0e0;
+  margin-top: 2rem;
+  margin-bottom: 0.75rem;
+  line-height: 1.3;
+}
+
+.article p {
+  font-size: 1.05rem;
+  line-height: 1.7;
+  margin-bottom: 1.25rem;
+  color: #d0d0d8;
+}
+
+.article ul {
+  margin: 0 0 1.25rem 1.5rem;
+  padding: 0;
+}
+
+.article li {
+  font-size: 1.05rem;
+  line-height: 1.7;
+  margin-bottom: 0.5rem;
+  color: #d0d0d8;
+}
+
+.article strong {
+  color: #ffffff;
+  font-weight: 600;
+}
+
+.landing {
+  position: relative;
+  min-height: 100vh;
+  background-image: url('assets/portrait.jpg');
+  background-size: cover;
+  background-position: center;
+  background-color: #0f0f1a;
+}
+
+.landing-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+}
+
+.landing-text {
+  position: relative;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  margin-left: 250px;
+  text-align: center;
+  padding: 2rem;
+}
+
+.landing-text h1 {
+  font-size: 3rem;
+  font-weight: 700;
+  color: #ffffff;
+  margin-bottom: 1rem;
+}
+
+.landing-text p {
+  font-size: 1.2rem;
+  color: #d0d0d8;
+  margin-bottom: 0.5rem;
+}
+
+@media (max-width: 768px) {
+  .sidebar {
+    display: none;
+  }
+
+  .sidebar.sidebar-open {
+    display: flex;
+  }
+
+  .hamburger {
+    display: block;
+  }
+
+  .hamburger .icon-open {
+    display: block;
+  }
+
+  .hamburger .icon-close {
+    display: none;
+  }
+
+  .sidebar.sidebar-open ~ .hamburger .icon-open {
+    display: none;
+  }
+
+  .sidebar.sidebar-open ~ .hamburger .icon-close {
+    display: block;
+  }
+
+  .content {
+    margin-left: 0;
+  }
+
+  .article {
+    padding: 4rem 1.25rem 2rem;
+  }
+
+  .landing-text {
+    margin-left: 0;
+    padding: 4rem 1.25rem 2rem;
+  }
+
+  .landing-text h1 {
+    font-size: 2rem;
+  }
+}

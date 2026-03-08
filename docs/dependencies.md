@@ -29,10 +29,10 @@ Every component must have an entry here when it is built. If a component is rebu
 | Component | File(s) | LLM Version | Date | Notes |
 |-----------|---------|-------------|------|-------|
 | Design documents | `docs/*.md` | claude-sonnet-4-6 | March 2026 | Project Overview, System Map, Working Principles, Dependencies |
-| Landing Page | `index.html` | — | — | Not yet built |
-| Concept Pages | `concept-1.html` through `concept-6.html` | — | — | Not yet built |
-| Stylesheet | `styles.css` | — | — | Not yet built |
-| Navigation Script | `nav.js` | — | — | Not yet built |
+| Landing Page | `index.html` | claude-opus-4-6 | March 2026 | Phase 1 build |
+| Concept Pages | `concept-1.html` through `concept-6.html` | claude-opus-4-6 | March 2026 | Phase 1 build — content from `/content/*.md` |
+| Stylesheet | `styles.css` | claude-opus-4-6 | March 2026 | Phase 1 build |
+| Navigation Script | `nav.js` | claude-opus-4-6 | March 2026 | Phase 1 build |
 
 ---
 
