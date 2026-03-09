@@ -23,7 +23,7 @@ The entire reader-facing website: the landing page, the concept pages (article v
          │
          ▼  (reader clicks a concept)
 ┌──────────────────────────────────────────┐
-│  Concept Page (concept-{slug}.html)      │
+│  Concept Page ({slug}.html)               │
 │  - Sidebar with concept list (desktop)   │
 │  - Hamburger menu (mobile)               │
 │  - Main area: conversation OR article    │
@@ -39,7 +39,7 @@ Each concept gets its own HTML page. No client-side routing, no SPA — plain st
 
 **Aesthetic:** Modern, clean, minimal. Dark-leaning palette. The site should feel like a serious intellectual space — not a corporate landing page and not a personal blog. Think: the intersection of a design portfolio and a longform publication.
 
-**Typography:** A single sans-serif font family (system font stack or a clean Google Font like Inter or Space Grotesk). Large, confident headings. Generous line height and letter spacing for body text. The text should breathe.
+**Typography:** Space Grotesk (Google Fonts). A geometric sans-serif with enough personality to feel distinctive without being distracting. Loaded via `<link>` from Google Fonts — one weight for body (400), one for headings (700). Large, confident headings. Generous line height (`1.6` for body, `1.2` for headings) and comfortable letter spacing. The text should breathe.
 
 **Colour palette:**
 - Background: near-black or very dark grey (`#0a0a0a` to `#141414`)
@@ -50,8 +50,9 @@ Each concept gets its own HTML page. No client-side routing, no SPA — plain st
 
 **Landing page hero:**
 - Full-viewport background using the author's portrait (`/assets/portrait.jpg`) — the android image.
-- Image treated with a dark overlay gradient so text remains legible.
-- Series title "The Age of Intent" and a one-line tagline centered over the image.
+- Image set as `background-image` with `background-size: cover; background-position: center`.
+- Dark overlay gradient applied via a `::before` pseudo-element: `linear-gradient(to bottom, rgba(10,10,10,0.5) 0%, rgba(10,10,10,0.85) 100%)`. This keeps the upper portion of the image visible while ensuring the title text at centre and the transition to the concept list at the bottom are fully legible. The exact opacity values should be tuned once the page is live — start with these and adjust.
+- Series title "The Age of Intent" and a one-line tagline centered vertically and horizontally over the image.
 - Below the hero fold: concept list as clickable cards or links leading to each concept page.
 
 **Overall feel:** Intentional whitespace, restrained colour, sharp typography. Every element earns its place.
@@ -143,7 +144,7 @@ This is the default view when a reader opens a concept page. The agent opens the
 
 Messages appear in a vertical scrolling area:
 
-- **Agent messages**: left-aligned. Subtle accent-tinted background. The agent's name or a small icon at the top.
+- **Agent messages**: left-aligned. Subtle accent-tinted background. The author's name displayed as a small label above the first agent message in the conversation (e.g., "Sicco"). Subsequent agent messages do not repeat the name — the left-alignment is sufficient to identify them.
 - **Reader messages**: right-aligned. Slightly lighter background than the page. No avatar needed.
 - Messages support basic markdown rendering: bold, italic, line breaks, paragraphs. No code blocks, no images, no complex formatting.
 - New messages animate in with a subtle fade or slide — nothing flashy.
@@ -342,20 +343,22 @@ The input bar remains enabled after an error — the reader can try sending anot
 
 ```
 site/
-├── index.html                  ← landing page
-├── concept-1.html              ← one page per concept
-├── concept-2.html
-├── concept-3.html
-├── concept-4.html
-├── concept-5.html
-├── concept-6.html
+├── index.html                          ← landing page
+├── architecture-as-source.html         ← concept pages use slug-based URLs
+├── {concept-2-slug}.html
+├── {concept-3-slug}.html
+├── {concept-4-slug}.html
+├── {concept-5-slug}.html
+├── {concept-6-slug}.html
 ├── css/
-│   └── style.css               ← single stylesheet
+│   └── style.css                       ← single stylesheet
 ├── js/
-│   ├── conversation.js         ← chat logic, SSE handling, session state
-│   └── navigation.js           ← sidebar, hamburger menu, view switching
-└── images/                     ← any processed/optimised images
+│   ├── conversation.js                 ← chat logic, SSE handling, session state
+│   └── navigation.js                   ← sidebar, hamburger menu, view switching
+└── images/                             ← any processed/optimised images
 ```
+
+URLs are slug-based (e.g., `/architecture-as-source.html`), matching the `conceptSlug` used in the API contract. The slug for each concept is derived from its title — lowercase, hyphenated. The exact slug for each concept is defined in the concept's markdown frontmatter or in a central concept registry (see article content pipeline, to be defined).
 
 All files are static. No build step, no bundler, no transpiler. The CSS and JS are written directly — what's in the repo is what gets deployed.
 
@@ -387,13 +390,18 @@ The hamburger menu overlay:
 
 ---
 
+## Resolved Decisions
+
+| Decision | Resolution |
+|----------|-----------|
+| Font | Space Grotesk via Google Fonts (400 + 700 weights) |
+| Concept page URLs | Slug-based (e.g., `/architecture-as-source.html`), matching API `conceptSlug` |
+| Agent identity | Author's name displayed as a label above the first agent message |
+| Portrait overlay | Dark gradient via `::before` pseudo-element — start values defined in Visual Design section, tune with real image |
+
 ## Open Questions
 
-1. **Font choice** — Inter, Space Grotesk, or system font stack? System fonts avoid the network request but are less distinctive. Needs a visual decision once the first page is built.
-2. **Portrait image treatment** — How much overlay/gradient on the landing page hero? Too much darkening loses the image; too little makes text unreadable. Needs iteration with the actual image.
-3. **Article content pipeline** — The concept markdown files currently contain research notes, not publishable articles. How are the final articles produced and converted to HTML for the static pages? This is an authoring workflow question, not a frontend question, but the frontend needs the final HTML.
-4. **Concept page URLs** — Should URLs be `/concept-1.html` (by number) or `/architecture-as-source.html` (by slug)? Slugs are more meaningful but require a mapping. The project overview uses slugs in the API contract.
-5. **Agent name/icon** — Does the agent have a visible name or avatar in the chat? Or is it anonymous? The design currently assumes a minimal indicator (small icon or label) but this is a brand decision.
+1. **Article content pipeline** — How do concept articles get from the author's markdown to the static HTML pages? The concept markdown files in `/content/` currently contain research notes and concept instruction documents, not publishable articles. The frontend needs final article HTML embedded in each concept page. This requires a separate design decision — see discussion below or a dedicated `content-pipeline.md` document once resolved.
 
 ---
 
