@@ -36,12 +36,14 @@ SSE stream → Reader
 
 1. **Receive request** — The frontend sends the session ID, concept slug, and the reader's message (empty string for the opening exchange).
 2. **Read the session blob** — Fetch the conversation history from Netlify Blobs using the session ID as the key. If no blob exists, this is the opening exchange — the agent generates the first message dynamically.
-3. **Build the prompt** — Two paths:
+3. **Wait for summariser** — If the summariser agent is still processing the previous exchange, wait for it to finish. The context assembler needs all summaries to exist before it can run. (Only relevant from exchange 10 onward.)
+4. **Build the prompt** — Two paths:
    - **Exchanges 1–8:** The per-concept instruction document (prompt-cached) + all prior exchanges raw + the current reader message. No AI involvement.
-   - **Exchange 9+:** The per-concept instruction document (prompt-cached) + context block assembled by the prompt-building agent (Haiku) + the current reader message.
-4. **Call the conversation agent** — Send the assembled prompt to Claude Sonnet 4.6 via the Anthropic API with streaming enabled.
-5. **Stream the response** — Relay the Anthropic stream as Server-Sent Events to the frontend. The reader sees tokens arriving in real time.
-6. **Persist the exchange** — Once the stream completes, append the new exchange (reader message + full agent response) to the session blob and write it back. If this is exchange 9+, the prompt-building agent also generates a summary for this exchange.
+   - **Exchange 9+:** The per-concept instruction document (prompt-cached) + context block assembled by the context assembler agent (Haiku) + the current reader message.
+5. **Call the conversation agent** — Send the assembled prompt to Claude Sonnet 4.6 via the Anthropic API with streaming enabled.
+6. **Stream the response** — Relay the Anthropic stream as Server-Sent Events to the frontend. The reader sees tokens arriving in real time.
+7. **Persist the exchange** — Once the stream completes, append the new exchange (reader message + full agent response) to the session blob and write it back.
+8. **Summarise the exchange** — If this is exchange 9+, the summariser agent (Haiku) generates a summary of this exchange and writes it to the blob. This happens after the response is delivered — the reader is already reading, not waiting.
 
 ---
 
@@ -71,17 +73,26 @@ The prompt sent to Sonnet 4.6 is assembled from three blocks:
 
 ---
 
-## The Prompt-Building Agent
+## The Prompt-Building Agents
 
-A separate concern from the conversation endpoint, but called by it.
+Two separate Haiku agents handle context management, called at different points in the exchange lifecycle:
 
-- **Model:** Claude Haiku
-- **Activated:** Only from exchange 9 onward. Before that, context construction is mechanical (just append raw exchanges).
-- **Input:** The full session blob (all exchanges with their summaries).
-- **Output:** A context block — a mix of summarised older exchanges and verbatim recent exchanges — ready to be inserted as Block 2.
-- **Persistence:** After each exchange (from exchange 9+), the prompt-building agent also writes a summary of the new exchange back into the session blob, so future calls have summaries available.
+### Summariser agent
+- **When:** Runs *after* each exchange is persisted (from exchange 9 onward). Not on the critical path — the reader is already reading the response.
+- **Input:** The completed exchange (reader message + agent response).
+- **Output:** A 2–4 sentence summary written to the exchange's `summary` field in the session blob.
+- **First activation (exchange 9):** Retroactively summarises exchanges 1–8.
 
-The prompt-building agent deserves its own component design document — this section defines only the interface between it and the conversation endpoint.
+### Context assembler agent
+- **When:** Runs *before* the conversation agent (from exchange 9 onward). On the critical path.
+- **Input:** The reader's new message, all exchange summaries, and all full exchanges.
+- **Output:** A context block ready to be inserted as Block 2.
+- **Assembly rules:**
+  - Last 4 exchanges: always included verbatim.
+  - Older exchanges: included as summaries.
+  - Reference detection: if the reader's new message references or revisits something from an older exchange (beyond the last 4), that exchange is pulled in verbatim alongside the summaries.
+
+These agents are split because the context assembler needs summaries to already exist before it can do reference detection. See [Prompt-Building Agents](prompt-building-agent.md) for full design.
 
 ---
 
