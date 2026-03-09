@@ -82,6 +82,38 @@ Phase 2 adds a conversational AI agent to each concept page. This is the core of
 - Exchange storage — every exchange persisted with a summary for long-running context
 - Serverless backend with API keys kept server-side
 
+### Phase 2 Technical Decisions
+
+**Sessions:**
+- A session ID is generated when the reader sends their first message.
+- Sessions expire after 1 hour of inactivity.
+- Returning visitors always get a new session. Old conversations are not loaded or resumed.
+
+**Per-Concept Instruction Documents:**
+- Each concept has a dedicated instruction document authored by the author, stored in `/content/` as `.md` files.
+- These documents contain the argument skeleton, conversational style, provocative entry questions, and success criteria for that concept.
+- The system consumes these documents; it does not generate or modify them.
+- These documents do not exist yet and will be created by the author outside the development process.
+
+**Conversation Entry Point:**
+- The agent opens the conversation — the reader does not need to speak first.
+- The opening is different per concept and is defined in the per-concept instruction document.
+
+**Exchange Limits:**
+- Each session is capped at 25 exchanges.
+- This limit is enforced client-side. When the cap is reached, the frontend displays a "this conversation has reached its limit" message without making an API call.
+
+**Streaming Responses:**
+- Agent responses stream token-by-token to the reader using Server-Sent Events (SSE).
+- This makes the conversation feel natural — the reader sees the agent "thinking and speaking" rather than waiting for a block of text to appear.
+- The Anthropic API natively supports streaming. Netlify Functions support streaming responses.
+
+**Error Handling:**
+- The error message is baked into the frontend HTML/JS — it does not depend on the API.
+- If the backend fails or a stream breaks mid-response, the frontend displays: *"I'm sorry, but there are technical difficulties with the website and I can't continue the conversation at this time."*
+- This message renders even if the API is completely unreachable, because it lives in the client, not the server.
+- For partial failures mid-stream: the frontend detects the broken connection and appends the error message to whatever content was already shown.
+
 ### Phase 3 Scope (Future)
 
 - Visualisation overhaul of the entire site
