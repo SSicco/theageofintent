@@ -1,0 +1,7 @@
+[build]
+  command = "node build.js"
+  publish = "site/"
+  functions = "functions/"
+
+[functions]
+  included_files = ["content/instructions/**"]
