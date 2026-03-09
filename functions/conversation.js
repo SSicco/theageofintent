@@ -4,6 +4,8 @@ const matter = require('gray-matter');
 const Anthropic = require('@anthropic-ai/sdk');
 const { getStore } = require('@netlify/blobs');
 
+const { processSession } = require('./session-end');
+
 const anthropic = new Anthropic();
 
 var SUMMARISER_PROMPT = `You are a conversation summariser. Your job is to write a concise summary of a single exchange (one reader message + one agent response) from a Socratic dialogue.
@@ -279,6 +281,10 @@ exports.handler = async function (event) {
           session.exchanges[session.exchanges.length - 1].summary = currentSummary;
 
           await store.setJSON(sessionId, session);
+        }
+
+        if (exchangeNumber >= 25) {
+          processSession(sessionId).catch(function () {});
         }
 
         controller.enqueue(encoder.encode('data: ' + JSON.stringify({ ready: true }) + '\n\n'));
