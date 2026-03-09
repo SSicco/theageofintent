@@ -1,6 +1,7 @@
 # Component Design — Conversation Endpoint
 
 > **Parent document:** [Project Overview](../project-overview.md). All decisions here must be consistent with it.
+> **Operating rules:** [Working Principles](../working-principles.md) — read before writing any code.
 
 ---
 

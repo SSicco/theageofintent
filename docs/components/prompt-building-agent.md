@@ -1,6 +1,7 @@
 # Component Design — Prompt-Building Agents
 
 > **Parent document:** [Project Overview](../project-overview.md). All decisions here must be consistent with it.
+> **Operating rules:** [Working Principles](../working-principles.md) — read before writing any code.
 > **Related:** [Conversation Endpoint](conversation-endpoint.md) — the component that calls these agents.
 
 ---

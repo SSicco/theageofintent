@@ -61,6 +61,8 @@ The agent uses this instruction document as its guide. It tracks where the reade
 
 5. **This project is the concept in practice.** The website is a live demonstration of the Age of Intent thesis — specifically Concept 1 (Architecture-as-Source) and Concept 6 (The Conversational Medium). The methodology used to build it should be consistent with the ideas it publishes.
 
+6. **The coding agent follows the Working Principles.** The [Working Principles](working-principles.md) document defines how the coding agent must behave: when to stop and ask, what counts as source of truth, how to handle ambiguity, and what the agent is not responsible for. It must be read before writing any code.
+
 ---
 
 ## Build Phases

@@ -1,6 +1,7 @@
 # Component Design — Session-End Agent
 
 > **Parent document:** [Project Overview](../project-overview.md). All decisions here must be consistent with it.
+> **Operating rules:** [Working Principles](../working-principles.md) — read before writing any code.
 > **Related:** [Conversation Endpoint](conversation-endpoint.md) — handles the live conversation. This agent runs after it's over.
 
 ---
