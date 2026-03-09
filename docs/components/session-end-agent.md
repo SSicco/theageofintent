@@ -149,12 +149,12 @@ The `sessionSummary` field doubles as a "processed" flag — if it exists, the s
 
 ---
 
-## Open Questions
+## Resolved Questions
 
-1. **Contributions file size** — The per-concept contributions file grows with every session. At what point does it need rotation or archiving? Probably not a Phase 2 concern, but worth noting.
-2. **Contribution quality** — Can Haiku reliably distinguish a genuinely novel framing from a restatement? The `type` classification needs testing with real sessions.
-3. **Scheduled function frequency** — Every 15 minutes seems reasonable. Too frequent wastes compute; too infrequent means stale sessions sit unprocessed. The exact interval can be adjusted.
-4. **Short sessions** — Should the session-end agent run for sessions with only 1–2 exchanges? Probably not worth processing. A minimum threshold (e.g., 5 exchanges) may make sense.
+1. **Contributions file size** — The per-concept contributions file grows with every session. **Decision:** Not a Phase 2 concern. The author manually archives sessions after reviewing them and incorporating feedback into the concept docs. No automated rotation needed.
+2. **Contribution quality** — Can Haiku reliably distinguish a genuinely novel framing from a restatement? **Decision:** To be tested with real sessions. We proceed with the current design and iterate on the agent prompt if classification quality is insufficient.
+3. **Scheduled function frequency** — How often should the timeout-checking function run? **Decision:** Every 15 minutes. This is the interval at which the scheduled Netlify Function scans for sessions where `lastActiveAt` is over 1 hour ago. Adjustable later if needed.
+4. **Short sessions** — Should the session-end agent skip sessions with very few exchanges? **Decision:** No. Every session is processed the same way regardless of length. No minimum exchange threshold.
 
 ---
 

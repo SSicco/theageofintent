@@ -225,12 +225,12 @@ Two Haiku calls per exchange (from exchange 9 onward), but only one is on the cr
 
 ---
 
-## Open Questions
+## Resolved Questions
 
-1. **Summary quality** — Can Haiku write summaries that are good enough for reliable reference detection? If summaries are too generic, the context assembler won't catch subtle references. Needs testing with real conversations.
-2. **Latency of context assembler** — This is on the critical path. Target is under 1 second. Needs measurement.
-3. **Race condition** — If the reader sends a message before the summariser finishes processing the previous exchange, the endpoint must wait. How often does this happen in practice, and is the wait noticeable?
-4. **Multiple references** — The reader might reference 2–3 older exchanges at once. Including all of them verbatim could make the context block large. Is there a cap, or do we always include all referenced exchanges?
+1. **Summary quality** — Can Haiku write summaries that are good enough for reliable reference detection? **Decision:** To be tested with real conversations. We proceed with the current design and iterate on the summariser prompt if quality is insufficient.
+2. **Latency of context assembler** — This is on the critical path. **Decision:** Not a blocker. Even if latency exceeds 1 second, the site still works. We proceed and do not optimise preemptively.
+3. **Race condition** — If the reader sends a message before the summariser finishes processing the previous exchange, the endpoint must wait. **Decision:** The frontend delays/pauses the reader's ability to send a new message until the summariser has finished. The reader can type while waiting, but sending is blocked until the previous exchange is fully processed (including summarisation from exchange 9+).
+4. **Multiple references** — The reader might reference 2–3 older exchanges at once. **Decision:** No cap on referenced exchanges. All detected references are included verbatim. The hard limit is the model's context window (200k tokens). If the context block would exceed the context window, drop the oldest records first.
 
 ---
 

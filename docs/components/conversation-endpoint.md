@@ -37,7 +37,7 @@ SSE stream → Reader
 
 1. **Receive request** — The frontend sends the session ID, concept slug, and the reader's message (empty string for the opening exchange).
 2. **Read the session blob** — Fetch the conversation history from Netlify Blobs using the session ID as the key. If no blob exists, this is the opening exchange — the agent generates the first message dynamically.
-3. **Wait for summariser** — If the summariser agent is still processing the previous exchange, wait for it to finish. The context assembler needs all summaries to exist before it can run. (Only relevant from exchange 10 onward.)
+3. **Wait for summariser** — If the summariser agent is still processing the previous exchange, wait for it to finish. The context assembler needs all summaries to exist before it can run. (Only relevant from exchange 10 onward.) In practice, the frontend blocks sending until the previous exchange is fully processed, so this wait should be rare.
 4. **Build the prompt** — Two paths:
    - **Exchanges 1–8:** The per-concept instruction document (prompt-cached) + all prior exchanges raw + the current reader message. No AI involvement.
    - **Exchange 9+:** The per-concept instruction document (prompt-cached) + context block assembled by the context assembler agent (Haiku) + the current reader message.
@@ -160,11 +160,11 @@ data: {"done": true}
 
 ---
 
-## Open Questions
+## Resolved Questions
 
-1. **Prompt caching mechanics** — How exactly does Anthropic's prompt caching work with Netlify Functions? Each function invocation is stateless, so the cache must be managed by the Anthropic API side (keyed by content hash). Needs verification during implementation.
-2. **Blob write contention** — If the reader sends a second message before the first exchange finishes persisting, the blob could be overwritten. In practice this is unlikely (the reader waits for the response), but worth noting.
-3. **Prompt-building agent latency** — From exchange 9 onward, there is an extra Haiku call before the Sonnet call. How much latency does this add? Acceptable if under ~1 second.
+1. **Prompt caching mechanics** — Anthropic's prompt caching is managed API-side (keyed by content hash). Each Netlify Function invocation is stateless, so the cache works across invocations automatically. **Decision:** Verify during implementation; no design change needed.
+2. **Blob write contention** — If the reader sends a message before the previous exchange finishes persisting (or before the summariser finishes), the blob could be in an inconsistent state. **Decision:** The frontend must delay/pause the reader's ability to send a new message until the previous exchange is fully processed (persisted and, from exchange 9+, summarised). The reader can type while waiting, but sending is blocked until ready.
+3. **Prompt-building agent latency** — From exchange 9 onward, there is an extra Haiku call before the Sonnet call. **Decision:** Monitor during testing. We proceed with the current design and address latency only if it becomes a problem in practice.
 
 ---
 
