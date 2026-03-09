@@ -109,6 +109,21 @@ If you are making a decision that feels like it belongs in one of those categori
 
 ---
 
+## Previous Phase Code Is Irrelevant
+
+Do not read, reference, or preserve code from previous phases. Each phase is built from the design documents, not from the previous phase's code. The design documents define the complete specification — if something is not in the design documents, it does not exist.
+
+This means:
+
+- Do not inspect existing files to "see what's there" before building
+- Do not try to preserve or reuse code from a previous phase
+- Do not look at archived design documents in `docs/archive/` — they describe a previous phase that has been superseded
+- If an existing file conflicts with what the design documents specify, overwrite it without hesitation
+
+The only things that carry forward between phases are the **assets** directory (images) and the **content** directory (research notes, which are not consumed by the system). Everything else is rebuilt from the current design documents.
+
+---
+
 ## The Self-Sufficiency Test
 
 At any point, the complete set of design documents should be enough for a different AI — with no prior conversation history — to pick up this project and make consistent decisions. If you notice something that would be unclear to that hypothetical AI, flag it so the relevant design document can be updated.
