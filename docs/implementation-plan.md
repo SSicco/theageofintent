@@ -31,11 +31,13 @@ Set up the project structure, configuration, and dependencies so that subsequent
 1. Create `package.json` with the project's dependencies:
    - `@anthropic-ai/sdk`
    - `@netlify/blobs`
-   - `marked` (markdown-to-HTML library for the build script)
+   - `marked` (markdown-to-HTML conversion)
+   - `gray-matter` (YAML frontmatter parsing)
 2. Create `netlify.toml` with:
    - Build command: `node build.js`
    - Publish directory: `site/`
    - Functions directory: `functions/`
+   - `included_files = ["content/instructions/**"]` under `[functions]` — this bundles instruction files so serverless functions can read them at runtime
 3. Create the directory structure:
    - `site/` (empty, will be populated by the build script)
    - `site/css/`
@@ -66,7 +68,7 @@ Set up the project structure, configuration, and dependencies so that subsequent
 **Read first:**
 - `docs/working-principles.md`
 - `docs/components/content-specification.md`
-- `docs/components/frontend-site.md` (the "Article Content Pipeline" and "Build Script" sections only)
+- `docs/components/frontend-site.md` (full document — the build script generates the HTML structure for all page layouts)
 
 **What to build:**
 
@@ -85,6 +87,8 @@ The build script (`build.js`) that converts article markdown to HTML and produce
    - The structural HTML for the concept page layout (sidebar, main area, input bar) as specified in the frontend design doc
    - The structural HTML for the landing page (hero section, concept list)
    - Google Fonts link for Space Grotesk (400, 700)
+   - On each concept page: a `data-concept-slug` attribute on the `<body>` or main container element, set to the concept's slug. This is how `conversation.js` knows which concept the reader is on.
+   - On each concept page: the author name "Sicco" hardcoded as a small label element above where the first agent message will appear.
 3. Copy `assets/portrait.jpg` to `site/images/portrait.jpg` during the build (the landing page hero needs it).
 
 **Do not:**
@@ -199,7 +203,7 @@ The core Netlify Function that handles conversation — but only the simple path
 1. Write `functions/conversation.js` (or `functions/conversation/index.js` if Netlify requires a directory):
    - Receive POST request with `sessionId`, `conceptSlug`, `message`
    - Read the session blob from Netlify Blobs (or create a new one if it doesn't exist)
-   - Read the instruction document from `content/instructions/{conceptSlug}.md`, strip the frontmatter
+   - Read the instruction document from `content/instructions/{conceptSlug}.md` using `gray-matter` to strip the YAML frontmatter (the instruction files must be bundled via `included_files` in `netlify.toml` — see the conversation endpoint design doc)
    - Build the prompt: instruction document (Block 1) + all prior exchanges raw (Block 2) + current reader message (Block 3)
    - Use Anthropic prompt caching for Block 1 (the instruction document)
    - Call Claude Sonnet via the Anthropic SDK with streaming enabled

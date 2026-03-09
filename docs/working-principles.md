@@ -67,7 +67,8 @@ The following are the only external dependencies for this project:
 - **Anthropic SDK** (`@anthropic-ai/sdk`) — for API calls to Claude (conversation agent, prompt-building agent, session-end agent)
 - **Netlify Functions** runtime — the serverless execution environment
 - **Netlify Blobs** (`@netlify/blobs`) — for exchange and session storage
-- **A markdown-to-HTML library** — for the build script (specific library to be determined in the build script design document)
+- **marked** (`marked`) — markdown-to-HTML conversion for the build script
+- **gray-matter** (`gray-matter`) — YAML frontmatter parsing for the build script and serverless functions
 
 Never add an external dependency without a design document specifying it. If you are considering adding a dependency, **stop and ask the author** — there may be a simpler alternative.
 

@@ -124,6 +124,21 @@ Stored in Netlify Blobs, keyed by session ID.
 
 ---
 
+## Runtime File Access
+
+The conversation endpoint reads instruction files from `content/instructions/{conceptSlug}.md` at runtime. Netlify Functions run in an isolated environment and do not automatically have access to files outside the function bundle.
+
+To make instruction files available at runtime, configure `included_files` in `netlify.toml`:
+
+```toml
+[functions]
+  included_files = ["content/instructions/**"]
+```
+
+The function then reads instruction files using a path relative to the function's execution context. Use `gray-matter` to strip the YAML frontmatter before sending the instruction document content as Block 1 of the prompt.
+
+---
+
 ## API Contract
 
 **Endpoint:** `POST /.netlify/functions/conversation`

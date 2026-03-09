@@ -145,7 +145,7 @@ This is the default view when a reader opens a concept page. The agent opens the
 
 Messages appear in a vertical scrolling area:
 
-- **Agent messages**: left-aligned. Subtle accent-tinted background. The author's name displayed as a small label above the first agent message in the conversation (e.g., "Sicco"). Subsequent agent messages do not repeat the name — the left-alignment is sufficient to identify them.
+- **Agent messages**: left-aligned. Subtle accent-tinted background. The author's name "Sicco" displayed as a small label above the first agent message in the conversation. This name is hardcoded in the build script's concept page template. Subsequent agent messages do not repeat the name — the left-alignment is sufficient to identify them.
 - **Reader messages**: right-aligned. Slightly lighter background than the page. No avatar needed.
 - Messages support basic markdown rendering: bold, italic, line breaks, paragraphs. No code blocks, no images, no complex formatting.
 - New messages animate in with a subtle fade or slide — nothing flashy.
@@ -235,7 +235,7 @@ The frontend tracks:
 ```javascript
 {
   sessionId: "uuid",          // generated on first exchange
-  conceptSlug: "concept-slug", // from the page
+  conceptSlug: "concept-slug", // read from data-concept-slug attribute on <body> or main container, injected by the build script
   exchanges: [],               // local copy of all exchanges
   exchangeCount: 0,            // for enforcing the 25-exchange cap
   lastMessageTime: null,       // for timeout countdown
