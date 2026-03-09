@@ -95,11 +95,13 @@ Phase 2 adds a conversational AI agent to each concept page. This is the core of
 - Returning visitors always get a new session. Old conversations are not loaded or resumed.
 - No cookies means no cookie banner, no privacy policy, and no GDPR compliance burden.
 
-**Per-Concept Instruction Documents:**
-- Each concept has a dedicated instruction document authored by the author, stored in `/content/` as `.md` files.
-- These documents contain the argument skeleton, conversational style, provocative entry questions, and success criteria for that concept.
-- The system consumes these documents; it does not generate or modify them.
-- These documents do not exist yet and will be created by the author outside the development process.
+**Content Structure:**
+- Each concept has two separate content files:
+  - **Article** (`/content/articles/{slug}.md`) — the publishable article the reader sees. Written by the author as markdown, converted to HTML at build time by a build script.
+  - **Instruction document** (`/content/instructions/{slug}.md`) — the concept instruction document the conversation agent uses. Contains the argument skeleton, conversational style, provocative entry questions, and success criteria.
+- Both are authored by the author outside the development process. The system consumes them; it does not generate or modify them.
+- The existing files in `/content/` (concept-1.md through concept-6.md) are research notes — raw material for writing the articles and instructions. They are not consumed by the system directly.
+- A simple build script (`build.js`) converts article markdown to HTML and injects it into the static concept pages before deployment.
 
 **Conversation Entry Point:**
 - The agent opens the conversation — the reader does not need to speak first.
@@ -165,13 +167,17 @@ Phase 2 adds a conversational AI agent to each concept page. This is the core of
 
 ```
 theageofintent/
-├── site/                    ← deployable website files (HTML, CSS, JS)
+├── site/                    ← deployable website files (HTML, CSS, JS) — build output
 ├── functions/               ← serverless functions
-├── content/                 ← concept article markdown + concept instruction documents
+├── content/
+│   ├── articles/            ← publishable article markdown (reader-facing)
+│   ├── instructions/        ← concept instruction documents (agent-facing)
+│   └── contributions/       ← extracted reader contributions (auto-generated)
 ├── docs/                    ← current phase design documents
 │   ├── components/          ← component-level design docs
 │   └── archive/phase-1/    ← previous phase design documents
 ├── assets/                  ← images and static assets
+├── build.js                 ← build script: article markdown → HTML in site/
 └── netlify.toml             ← deployment configuration
 ```
 

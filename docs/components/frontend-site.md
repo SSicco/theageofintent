@@ -7,7 +7,7 @@
 
 ## What This Component Does
 
-The entire reader-facing website: the landing page, the concept pages (article view and conversation view), the navigation, and the chat UI. Everything the reader sees and interacts with. Built as a static site with vanilla HTML, CSS, and JavaScript — no framework, no build step, no dependencies beyond what ships in the browser.
+The entire reader-facing website: the landing page, the concept pages (article view and conversation view), the navigation, and the chat UI. Everything the reader sees and interacts with. Built as a static site with vanilla HTML, CSS, and JavaScript — no framework, no dependencies beyond what ships in the browser. A simple build script converts article markdown to HTML and injects it into concept pages before deployment.
 
 ---
 
@@ -205,7 +205,7 @@ After 40 minutes of inactivity:
 Toggled via the article toggle button in the input bar.
 
 - Renders the concept's article content as clean, readable prose.
-- The article is the published version of the concept markdown from `/content/`.
+- The article HTML is generated at build time from the article markdown in `/content/articles/{slug}.md` by the build script. It is injected into a hidden `<div class="article-view">` in the concept page's HTML.
 - Styled consistently with the site's typography: generous margins, comfortable reading width (max ~680px), large body text.
 - At the bottom of the article, a button: "Return to conversation." Clicking it switches back to the conversation view, preserving the reader's exact scroll position and conversation state.
 - The article toggle button in the input bar changes to indicate the reader is in article view (icon swap or highlight change). Clicking it again also returns to conversation.
@@ -358,9 +358,9 @@ site/
 └── images/                             ← any processed/optimised images
 ```
 
-URLs are slug-based (e.g., `/architecture-as-source.html`), matching the `conceptSlug` used in the API contract. The slug for each concept is derived from its title — lowercase, hyphenated. The exact slug for each concept is defined in the concept's markdown frontmatter or in a central concept registry (see article content pipeline, to be defined).
+URLs are slug-based (e.g., `/architecture-as-source.html`), matching the `conceptSlug` used in the API contract. The slug for each concept is the filename of its article markdown (e.g., `/content/articles/architecture-as-source.md` → `/architecture-as-source.html`).
 
-All files are static. No build step, no bundler, no transpiler. The CSS and JS are written directly — what's in the repo is what gets deployed.
+The CSS and JS are hand-written — no bundler, no transpiler. The only build step is the article build script, which reads article markdown from `/content/articles/`, converts it to HTML, and injects it into the concept page templates. The output in `site/` is what gets deployed.
 
 ---
 
@@ -385,7 +385,7 @@ The hamburger menu overlay:
 - **Does not persist anything client-side.** No localStorage, no cookies, no IndexedDB. Everything lives in JavaScript memory and is lost on refresh.
 - **Does not handle authentication.** No login, no user accounts, no identity.
 - **Does not render complex markdown.** The chat supports bold, italic, paragraphs, and line breaks. No tables, code blocks, images, or embedded media.
-- **Does not pre-render articles.** Articles are rendered from markdown at build time into the static HTML pages. They are not fetched dynamically.
+- **Does not fetch articles dynamically.** Article HTML is baked into the page at build time by the build script. There is no runtime markdown rendering or API call to load articles.
 - **Does not communicate with any service other than the conversation endpoint.** One API, one endpoint, one integration point.
 
 ---
@@ -399,9 +399,43 @@ The hamburger menu overlay:
 | Agent identity | Author's name displayed as a label above the first agent message |
 | Portrait overlay | Dark gradient via `::before` pseudo-element — start values defined in Visual Design section, tune with real image |
 
-## Open Questions
+## Article Content Pipeline
 
-1. **Article content pipeline** — How do concept articles get from the author's markdown to the static HTML pages? The concept markdown files in `/content/` currently contain research notes and concept instruction documents, not publishable articles. The frontend needs final article HTML embedded in each concept page. This requires a separate design decision — see discussion below or a dedicated `content-pipeline.md` document once resolved.
+Each concept has two separate content files, stored in different directories:
+
+```
+content/
+├── articles/                   ← reader-facing articles (markdown)
+│   ├── architecture-as-source.md
+│   ├── {concept-2-slug}.md
+│   └── ...
+├── instructions/               ← agent instruction documents (markdown)
+│   ├── architecture-as-source.md
+│   ├── {concept-2-slug}.md
+│   └── ...
+└── contributions/              ← session-end agent output (JSON, auto-generated)
+    └── ...
+```
+
+- **Article files** (`/content/articles/`) — the publishable article the reader sees. Written by the author as markdown. The build script converts these to HTML.
+- **Instruction files** (`/content/instructions/`) — the concept instruction document the conversation agent uses. Contains the argument skeleton, Socratic dialogue guide, tone, provocative questions, success criteria. Consumed by the conversation endpoint at runtime, never shown to the reader.
+
+The existing files in `/content/` (concept-1.md through concept-6.md) are research notes. They are the raw material from which the author will write both the articles and the instruction documents. They remain in `/content/` as reference until the final files are written, at which point they can be archived or removed.
+
+### Build Script
+
+A simple Node.js script (`build.js` in the project root) that:
+
+1. Reads each markdown file from `/content/articles/`
+2. Converts markdown to HTML (using a lightweight library like `marked`)
+3. Injects the HTML into the corresponding concept page template's `<div class="article-view">`
+4. Writes the final HTML files to `site/`
+
+The build script runs before deployment. On Netlify, this is configured as the build command in `netlify.toml`. Locally, the author runs it manually (`node build.js`).
+
+The build script also generates the landing page's concept list from the article files — reading the title and a short description from each article's frontmatter.
+
+### No open questions remain for this component.
 
 ---
 
