@@ -53,6 +53,7 @@ What counts as a contribution:
 
 - **Novel framing** — the reader described the concept using an analogy or framing the author hadn't considered.
 - **Strong objection** — the reader pushed back in a way that exposed a weakness in the argument skeleton.
+- **Invalidating argument** — the reader made an argument that challenges the entire concept's validity, not just a single node. These are the highest-priority contributions — if a reader can dismantle the concept, the author needs to know immediately.
 - **Personal application** — the reader applied the concept to their own domain in a way that reveals new implications.
 - **Articulated insight** — the reader stated the concept's core insight in their own words, especially if their phrasing is better or more vivid than the author's.
 - **Sticking points** — places where the reader got confused or stuck, suggesting the argument skeleton needs work at that node.
@@ -65,7 +66,7 @@ Each contribution is stored as:
   "conceptSlug": "architecture-as-source",
   "timestamp": "2026-03-09T15:30:00Z",
   "exchangeIndex": 14,
-  "type": "novel-framing | strong-objection | personal-application | articulated-insight | sticking-point",
+  "type": "novel-framing | strong-objection | invalidating-argument | personal-application | articulated-insight | sticking-point",
   "readerMessage": "The exact reader message",
   "agentMessage": "The agent message that preceded it (for context)",
   "note": "Brief explanation of why this is notable"
@@ -73,6 +74,18 @@ Each contribution is stored as:
 ```
 
 Contributions are appended to a per-concept contributions file: `/content/contributions/{conceptSlug}.json`. This file grows over time across all sessions for that concept.
+
+---
+
+## How It Detects Contributions
+
+The session-end agent receives the **complete session blob** — every exchange (reader message + agent response + per-exchange summary). It processes the entire conversation in a single Haiku call.
+
+It works from the full raw text of every exchange, not just the per-exchange summaries. The summaries are available but contribution extraction needs the actual reader messages — a summary would lose the exact phrasing that makes a novel framing or articulated insight worth extracting.
+
+The single Haiku call produces both outputs — the session summary and the contributions list. Not two separate passes.
+
+The system prompt for this call defines the six contribution types, what qualifies for each, and instructs the agent to scan every reader message for matches. For each match, it pulls the exact reader message, the preceding agent message (for context), classifies the type, and writes a brief note explaining why it's notable.
 
 ---
 
