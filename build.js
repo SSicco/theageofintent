@@ -23,7 +23,18 @@ function validateArticle(data, filename) {
   }
 }
 
-function conceptPageTemplate(article, articleHtml) {
+function buildConceptNav(allArticles, activeSlug) {
+  return allArticles
+    .sort((a, b) => a.concept - b.concept)
+    .map(a => {
+      const activeClass = a.slug === activeSlug ? ' class="active"' : '';
+      return `        <li${activeClass}><a href="${a.slug}.html">${a.title}</a></li>`;
+    })
+    .join('\n');
+}
+
+function conceptPageTemplate(article, articleHtml, allArticles) {
+  const navItems = buildConceptNav(allArticles, article.slug);
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -41,7 +52,9 @@ function conceptPageTemplate(article, articleHtml) {
       <a href="index.html" class="sidebar-title">The Age of Intent</a>
     </div>
     <nav class="sidebar-nav">
-      <ul class="concept-list" id="concept-list"></ul>
+      <ul class="concept-list" id="concept-list">
+${navItems}
+      </ul>
     </nav>
   </aside>
 
@@ -57,7 +70,9 @@ function conceptPageTemplate(article, articleHtml) {
   <div class="mobile-menu-backdrop" id="mobile-backdrop"></div>
   <nav class="mobile-menu" id="mobile-menu">
     <button class="mobile-menu-close" id="mobile-menu-close" aria-label="Close menu">&times;</button>
-    <ul class="concept-list" id="mobile-concept-list"></ul>
+    <ul class="concept-list" id="mobile-concept-list">
+${navItems}
+    </ul>
   </nav>
 
   <main class="main-content">
@@ -152,28 +167,32 @@ function build() {
     return;
   }
 
-  const articles = [];
+  const parsed = [];
 
   for (const file of files) {
     const filePath = path.join(ARTICLES_DIR, file);
     const raw = fs.readFileSync(filePath, 'utf-8');
-    const parsed = matter(raw);
+    const result = matter(raw);
 
-    parsed.data.content = parsed.content;
-    validateArticle(parsed.data, file);
+    result.data.content = result.content;
+    validateArticle(result.data, file);
 
-    if (parsed.data.status !== 'published') {
-      console.log(`Skipping ${file} (status: ${parsed.data.status})`);
+    if (result.data.status !== 'published') {
+      console.log(`Skipping ${file} (status: ${result.data.status})`);
       continue;
     }
 
-    const articleHtml = marked(parsed.content);
-    const pageHtml = conceptPageTemplate(parsed.data, articleHtml);
-    const outputPath = path.join(SITE_DIR, `${parsed.data.slug}.html`);
-    fs.writeFileSync(outputPath, pageHtml);
-    console.log(`Built ${parsed.data.slug}.html`);
+    parsed.push(result);
+  }
 
-    articles.push(parsed.data);
+  const articles = parsed.map(p => p.data);
+
+  for (const result of parsed) {
+    const articleHtml = marked(result.content);
+    const pageHtml = conceptPageTemplate(result.data, articleHtml, articles);
+    const outputPath = path.join(SITE_DIR, `${result.data.slug}.html`);
+    fs.writeFileSync(outputPath, pageHtml);
+    console.log(`Built ${result.data.slug}.html`);
   }
 
   const landingHtml = landingPageTemplate(articles);
