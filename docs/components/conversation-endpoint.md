@@ -145,7 +145,11 @@ data: {"token": " agent"}
 data: {"token": " responds"}
 data: {"token": "..."}
 data: {"done": true}
+data: {"ready": true}
 ```
+
+- `{"done": true}` — the agent's response is complete. The frontend can finalise the message display.
+- `{"ready": true}` — all post-response processing is complete (exchange persisted, summariser finished if applicable). The frontend can re-enable the input bar. The SSE connection stays open between `done` and `ready` to keep the frontend informed.
 
 **Error response:** If the function fails before streaming begins, it returns a standard HTTP error. If the stream breaks mid-response, the connection closes — the frontend handles this by showing the baked-in error message.
 

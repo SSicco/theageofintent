@@ -176,7 +176,7 @@ Fixed at the bottom of the main content area:
 - **Text input**: auto-expanding textarea (grows with content, up to ~4 lines, then scrolls internally). Placeholder text: "Type your message..."
 - **Send button**: sends the message. Also triggered by Enter key. Shift+Enter for newline.
 - **Article toggle button**: a document/page icon. Navigates to the article view. Tooltip: "Read the article."
-- The input bar is **disabled** while the agent is streaming a response. Visual indicator: greyed out, send button inactive.
+- The input bar is **disabled** while the agent is streaming a response and while the backend is processing post-response tasks (persisting the exchange and, from exchange 9 onward, running the summariser). The reader can type during this time, but sending is blocked until the backend signals readiness. Visual indicator: greyed out, send button inactive.
 - When the session has ended (exchange limit or timeout), the input bar is replaced with a message: "This conversation has reached its limit. Refresh the page to start a new one."
 
 ### Exchange Limit Countdown
@@ -292,9 +292,13 @@ async function sendMessage(message) {
     appendErrorMessage();
   } finally {
     isStreaming = false;
-    enableInput();
     exchangeCount++;
     lastMessageTime = Date.now();
+    // Input remains disabled until the backend signals that
+    // post-response processing is complete (persist + summarise).
+    // The SSE stream includes a "ready" event after all processing
+    // finishes. Only then is input re-enabled.
+    // enableInput() is called when the "ready" event arrives.
   }
 }
 ```
