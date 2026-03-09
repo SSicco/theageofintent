@@ -8,7 +8,7 @@
 
 A personal website that publishes a series of articles under the working title "The Age of Intent." Each article is also available as a live conversation with an AI agent that embodies the author's voice and perspective on that concept. The agent does not explain — it guides the reader to discover the concept's insight through Socratic dialogue, using the reader's own context and reasoning.
 
-Reader conversations are stored as JSON files. Every exchange is persisted with a short summary, enabling the agent to maintain long-running context and enabling the author to review and improve the concepts over time.
+Reader conversations are stored and persisted. Every exchange is saved with a short summary, enabling the agent to maintain long-running context and enabling the author to review and improve the concepts over time.
 
 The construction of this website is itself a live application of Concept 1 (Architecture-as-Source). At every moment, the full set of design documents should contain sufficient information for a different AI — with no prior context — to reconstruct the project and make consistent decisions. The documents are the source of truth; the code is the compiled output.
 
@@ -18,7 +18,23 @@ The construction of this website is itself a live application of Concept 1 (Arch
 
 **Readers** encounter a series of ideas either as written articles or through live conversation with an AI that knows the concept deeply. The conversation is not a Q&A — the agent asks provocative questions that lead the reader to discover the concept through their own thinking, applied to their own situation.
 
-**The author** uses the website to publish and iterate on the concept series over time. The author writes per-concept instruction documents that define the agent's conversational approach for each concept — argument skeleton, entry questions, mood, style. Accumulated reader conversations are the raw material for iteration.
+**The author** uses the website to publish and iterate on the concept series over time. Accumulated reader conversations are the raw material for that iteration — a feedback loop between publication and development.
+
+---
+
+## The Conversational Philosophy
+
+This is the most important and novel part of the project. The agent does **not** explain concepts to the reader. It guides the reader to discover the concept's insight through their own reasoning. This is Socratic dialogue — not instruction.
+
+**How it works:**
+
+The author writes a per-concept instruction document for each concept. This document contains the concept's argument skeleton — the logical structure broken into dialogue-ready nodes: premise, key tension, reframe, insight, implication. It also contains provocative entry questions designed to pull the reader in by connecting to something they already care about, as well as the conversational mood, style, and success criteria for that concept.
+
+The agent uses this instruction document as its guide. It tracks where the reader is in the argument skeleton and steers toward the next node — always through questions, never through lecturing. The agent should build tension, create momentum toward powerful points, and make it personal to the reader's reality.
+
+**Success** means the reader articulates the concept's insight in their own words, applied to their own context.
+
+**What the system consumes, not creates:** The per-concept instruction documents are authored content. The author writes them outside the system, just as an author writes an article. The system's job is to consume these documents and use them to drive conversation. The format these documents must follow is defined in the content specification.
 
 ---
 
@@ -39,9 +55,9 @@ The construction of this website is itself a live application of Concept 1 (Arch
 
 2. **The documents are self-sufficient.** At every moment, the complete set of design documents must contain enough information for a different AI — with no prior conversation history — to reconstruct the project and make consistent decisions. Nothing essential lives only in conversation history or in someone's head.
 
-3. **The reader experience is frictionless.** No system complexity is visible to the reader. Articles are clean. The conversation interface is simple. The multi-agent architecture operates invisibly behind a single chat interface.
+3. **The reader experience is frictionless.** No system complexity is visible to the reader. Articles are clean. The conversation interface is simple. All agent orchestration operates invisibly behind a single chat interface.
 
-4. **The site is built in phases.** Each phase is complete and functional before the next begins. Phase 1 delivered the static articles. Phase 2 adds the conversation interface and exchange storage. Phase 3 adds the author's review workflow and visual overhaul.
+4. **The site is built in phases.** Each phase is complete and functional before the next begins. Phase 1 delivered the static articles. Phase 2 adds the conversation interface and exchange storage. Phase 3 delivers the visualisation overhaul and continuous improvement pipeline.
 
 5. **This project is the concept in practice.** The website is a live demonstration of the Age of Intent thesis — specifically Concept 1 (Architecture-as-Source) and Concept 6 (The Conversational Medium). The methodology used to build it should be consistent with the ideas it publishes.
 
@@ -53,34 +69,23 @@ The construction of this website is itself a live application of Concept 1 (Arch
 |-------|----------------|--------|
 | 1 | Static site with articles | Complete |
 | 2 | Conversation interface + exchange storage + multi-agent backend | In progress |
-| 3 | Author review workflow + node visualisation + visual overhaul | Not started |
+| 3 | Visualisation overhaul + automated continuous improvement pipeline | Not started |
 
 ### Phase 2 Scope (Current)
 
 Phase 2 adds a conversational AI agent to each concept page. This is the core of the entire project — the living demonstration of Concept 6 (The Conversational Medium).
 
-**What gets built:**
-- Static site rebuilt with conversation interface on each concept page
-- Chat UI component for reader-agent dialogue
-- Two-agent backend: Prompt Builder Agent + Conversation Agent
-- Exchange storage — every exchange saved as JSON with summary
-- Serverless backend on Netlify Functions (API key stays server-side)
-
-**The conversational approach:**
-- The agent does not lecture. It guides the reader through Socratic dialogue.
-- Each concept has an author-written instruction document containing the argument skeleton, entry questions, conversational mood/style, and success criteria.
-- The agent tracks the reader's position in the argument structure and steers toward insight — always through questions.
-- Success = the reader articulates the concept's insight in their own words.
-
-**The two-agent architecture:**
-- **Prompt Builder Agent** — Reviews summaries of all older exchanges, selects relevant ones, assembles the full prompt for the Conversation Agent. One API call per exchange.
-- **Conversation Agent** — Receives the assembled prompt (system instructions + last 8 exchanges + selected older exchanges) and responds to the reader. One API call per exchange.
+**What gets delivered:**
+- Static site rebuilt with a conversation interface on each concept page
+- Chat UI for reader-agent dialogue
+- Multi-agent backend: a prompt-building agent that assembles context, and a conversation agent that talks to the reader
+- Exchange storage — every exchange persisted with a summary for long-running context
+- Serverless backend with API keys kept server-side
 
 ### Phase 3 Scope (Future)
 
-- Author review workflow for analysing stored conversations
-- Automatic review method for improving concept nodes
-- Major visualisation overhaul of the entire site
+- Visualisation overhaul of the entire site
+- Automated continuous improvement pipeline — reader conversations are analysed to systematically improve the concept nodes over time
 
 ---
 
@@ -89,13 +94,13 @@ Phase 2 adds a conversational AI agent to each concept page. This is the core of
 ```
 theageofintent/
 ├── site/                    ← deployable website files (HTML, CSS, JS)
-├── functions/               ← Netlify serverless functions
+├── functions/               ← serverless functions
 ├── content/                 ← concept article markdown + concept instruction documents
 ├── docs/                    ← current phase design documents
 │   ├── components/          ← component-level design docs
 │   └── archive/phase-1/    ← previous phase design documents
 ├── assets/                  ← images and static assets
-└── netlify.toml             ← Netlify configuration
+└── netlify.toml             ← deployment configuration
 ```
 
 ---
