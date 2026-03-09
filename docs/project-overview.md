@@ -103,7 +103,8 @@ Phase 2 adds a conversational AI agent to each concept page. This is the core of
 
 **Conversation Entry Point:**
 - The agent opens the conversation — the reader does not need to speak first.
-- The opening is different per concept and is defined in the per-concept instruction document.
+- The opening message is generated dynamically via the same API call as every other exchange. The frontend sends a request with an empty reader message, and the agent produces the opening based on the concept instruction document.
+- This means the opening is different every time and reflects the latest version of the concept instructions — no hardcoded first message.
 
 **Article–Conversation Navigation:**
 - The concept page defaults to the conversation view.

@@ -34,8 +34,8 @@ SSE stream → Reader
 
 ### Step-by-step
 
-1. **Receive request** — The frontend sends the reader's message, the session ID, and the concept slug.
-2. **Read the session blob** — Fetch the conversation history from Netlify Blobs using the session ID as the key. If no blob exists, this is the first exchange.
+1. **Receive request** — The frontend sends the session ID, concept slug, and the reader's message (empty string for the opening exchange).
+2. **Read the session blob** — Fetch the conversation history from Netlify Blobs using the session ID as the key. If no blob exists, this is the opening exchange — the agent generates the first message dynamically.
 3. **Build the prompt** — Two paths:
    - **Exchanges 1–8:** The per-concept instruction document (prompt-cached) + all prior exchanges raw + the current reader message. No AI involvement.
    - **Exchange 9+:** The per-concept instruction document (prompt-cached) + context block assembled by the prompt-building agent (Haiku) + the current reader message.
@@ -143,7 +143,7 @@ data: {"done": true}
 
 - **Does not manage sessions.** The session ID comes from the frontend. This function does not create, validate, or expire sessions — it simply uses the session ID as a blob key.
 - **Does not enforce exchange limits.** The 25-exchange cap is enforced client-side. This function processes whatever it receives.
-- **Does not generate the opening message.** The agent's opening line comes from the per-concept instruction document and is rendered by the frontend without an API call.
+- **Does not generate the opening message differently.** The opening message is a regular API call — the frontend sends a request with no reader message, and the agent generates the opening dynamically based on the concept instruction document. This is identical to any other exchange, just with an empty reader message.
 - **Does not handle the session-end agent.** Session-end processing (full session summary, extracting valuable contributions) is a separate function triggered independently.
 
 ---
