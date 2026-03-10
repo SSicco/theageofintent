@@ -45,10 +45,18 @@ Respond with a JSON array of exchange indices (1-based) that should be included 
 Output ONLY the JSON array. No explanation, no other text.`;
 
 function readInstruction(conceptSlug) {
-  var filePath = path.join(__dirname, '..', 'content', 'instructions', conceptSlug + '.md');
-  var raw = fs.readFileSync(filePath, 'utf-8');
-  var parsed = matter(raw);
-  return parsed.content;
+  var candidates = [
+    path.join(__dirname, 'content', 'instructions', conceptSlug + '.md'),
+    path.join(__dirname, '..', 'content', 'instructions', conceptSlug + '.md')
+  ];
+  for (var i = 0; i < candidates.length; i++) {
+    if (fs.existsSync(candidates[i])) {
+      var raw = fs.readFileSync(candidates[i], 'utf-8');
+      var parsed = matter(raw);
+      return parsed.content;
+    }
+  }
+  throw new Error('Instruction file not found. Tried: ' + candidates.join(', '));
 }
 
 function buildMessagesRaw(exchanges, readerMessage) {
@@ -290,6 +298,7 @@ exports.handler = async function (event) {
         controller.enqueue(encoder.encode('data: ' + JSON.stringify({ ready: true }) + '\n\n'));
         controller.close();
       } catch (error) {
+        console.error('Stream error:', error.message, error.stack);
         try {
           controller.enqueue(encoder.encode('data: ' + JSON.stringify({ done: true }) + '\n\n'));
           controller.close();
