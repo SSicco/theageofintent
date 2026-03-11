@@ -215,15 +215,10 @@
       var reader = response.body.getReader();
       var decoder = new TextDecoder();
       var buffer = '';
-      var done = false;
 
-      while (!done) {
+      while (true) {
         var result = await reader.read();
         if (result.done) {
-          if (!done) {
-            finalizeAgentMessage();
-            state.isStreaming = false;
-          }
           break;
         }
 
@@ -244,7 +239,6 @@
             } else if (event.done) {
               finalizeAgentMessage();
               state.isStreaming = false;
-              done = true;
             } else if (event.ready) {
               state.waitingForReady = false;
               state.exchangeCount++;
