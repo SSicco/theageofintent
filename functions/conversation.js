@@ -244,7 +244,7 @@ exports.handler = async function (event) {
     async start(controller) {
       try {
         var apiStream = anthropic.messages.stream({
-          model: 'claude-sonnet-4-6-20250514',
+          model: 'claude-sonnet-4-20250514',
           max_tokens: 4096,
           system: [
             {
