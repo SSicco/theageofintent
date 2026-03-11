@@ -1,11 +1,13 @@
-const fs = require('fs');
-const path = require('path');
-const matter = require('gray-matter');
-const Anthropic = require('@anthropic-ai/sdk');
-const { getStore } = require('@netlify/blobs');
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import matter from 'gray-matter';
+import Anthropic from '@anthropic-ai/sdk';
+import { getStore } from '@netlify/blobs';
+import sessionEnd from './session-end.js';
+const { processSession } = sessionEnd;
 
-const { processSession } = require('./session-end');
-
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const anthropic = new Anthropic();
 
 var SUMMARISER_PROMPT = `You are a conversation summariser. Your job is to write a concise summary of a single exchange (one reader message + one agent response) from a Socratic dialogue.
@@ -171,16 +173,16 @@ async function detectReferences(readerMessage, exchanges) {
   }
 }
 
-exports.handler = async function (event) {
-  if (event.httpMethod !== 'POST') {
-    return { statusCode: 405, body: 'Method not allowed' };
+export default async function(request, context) {
+  if (request.method !== 'POST') {
+    return new Response('Method not allowed', { status: 405 });
   }
 
   var body;
   try {
-    body = JSON.parse(event.body);
+    body = await request.json();
   } catch (e) {
-    return { statusCode: 400, body: 'Invalid JSON' };
+    return new Response('Invalid JSON', { status: 400 });
   }
 
   var sessionId = body.sessionId;
@@ -188,14 +190,14 @@ exports.handler = async function (event) {
   var message = body.message;
 
   if (!sessionId || !conceptSlug || message === undefined) {
-    return { statusCode: 400, body: 'Missing required fields' };
+    return new Response('Missing required fields', { status: 400 });
   }
 
   var instructionContent;
   try {
     instructionContent = readInstruction(conceptSlug);
   } catch (e) {
-    return { statusCode: 404, body: 'Instruction file not found for concept: ' + conceptSlug };
+    return new Response('Instruction file not found for concept: ' + conceptSlug, { status: 404 });
   }
 
   var store = getStore('sessions');
@@ -317,4 +319,8 @@ exports.handler = async function (event) {
       'Connection': 'keep-alive'
     }
   });
+}
+
+export const config = {
+  includedFiles: ['content/instructions/**']
 };
