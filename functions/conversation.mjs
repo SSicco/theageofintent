@@ -7,7 +7,7 @@ import { getStore } from '@netlify/blobs';
 import sessionEnd from './session-end.js';
 const { processSession } = sessionEnd;
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const currentDir = path.dirname(fileURLToPath(import.meta.url));
 const anthropic = new Anthropic();
 
 var SUMMARISER_PROMPT = `You are a conversation summariser. Your job is to write a concise summary of a single exchange (one reader message + one agent response) from a Socratic dialogue.
@@ -48,8 +48,8 @@ Output ONLY the JSON array. No explanation, no other text.`;
 
 function readInstruction(conceptSlug) {
   var candidates = [
-    path.join(__dirname, 'content', 'instructions', conceptSlug + '.md'),
-    path.join(__dirname, '..', 'content', 'instructions', conceptSlug + '.md'),
+    path.join(currentDir, 'content', 'instructions', conceptSlug + '.md'),
+    path.join(currentDir, '..', 'content', 'instructions', conceptSlug + '.md'),
     path.join(process.cwd(), 'content', 'instructions', conceptSlug + '.md'),
     path.join('/var/task', 'content', 'instructions', conceptSlug + '.md')
   ];
@@ -60,7 +60,7 @@ function readInstruction(conceptSlug) {
       return parsed.content;
     }
   }
-  throw new Error('Instruction file not found for "' + conceptSlug + '". __dirname=' + __dirname + ', cwd=' + process.cwd() + '. Tried: ' + candidates.join(', '));
+  throw new Error('Instruction file not found for "' + conceptSlug + '". currentDir=' + currentDir + ', cwd=' + process.cwd() + '. Tried: ' + candidates.join(', '));
 }
 
 function buildMessagesRaw(exchanges, readerMessage) {
