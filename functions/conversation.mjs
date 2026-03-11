@@ -49,7 +49,9 @@ Output ONLY the JSON array. No explanation, no other text.`;
 function readInstruction(conceptSlug) {
   var candidates = [
     path.join(__dirname, 'content', 'instructions', conceptSlug + '.md'),
-    path.join(__dirname, '..', 'content', 'instructions', conceptSlug + '.md')
+    path.join(__dirname, '..', 'content', 'instructions', conceptSlug + '.md'),
+    path.join(process.cwd(), 'content', 'instructions', conceptSlug + '.md'),
+    path.join('/var/task', 'content', 'instructions', conceptSlug + '.md')
   ];
   for (var i = 0; i < candidates.length; i++) {
     if (fs.existsSync(candidates[i])) {
@@ -58,7 +60,7 @@ function readInstruction(conceptSlug) {
       return parsed.content;
     }
   }
-  throw new Error('Instruction file not found. Tried: ' + candidates.join(', '));
+  throw new Error('Instruction file not found for "' + conceptSlug + '". __dirname=' + __dirname + ', cwd=' + process.cwd() + '. Tried: ' + candidates.join(', '));
 }
 
 function buildMessagesRaw(exchanges, readerMessage) {
@@ -323,5 +325,6 @@ export default async function(request, context) {
 }
 
 export const config = {
+  path: '/.netlify/functions/conversation',
   includedFiles: ['content/instructions/**']
 };
