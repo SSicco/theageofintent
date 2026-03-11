@@ -237,7 +237,9 @@
           var jsonStr = line.slice(6);
           try {
             var event = JSON.parse(jsonStr);
-            if (event.token !== undefined) {
+            if (event.error) {
+              console.error('Server error:', event.error);
+            } else if (event.token !== undefined) {
               appendTokenToAgent(event.token);
             } else if (event.done) {
               finalizeAgentMessage();

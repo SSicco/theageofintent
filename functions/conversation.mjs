@@ -302,6 +302,7 @@ export default async function(request, context) {
       } catch (error) {
         console.error('Stream error:', error.message, error.stack);
         try {
+          controller.enqueue(encoder.encode('data: ' + JSON.stringify({ error: error.message }) + '\n\n'));
           controller.enqueue(encoder.encode('data: ' + JSON.stringify({ done: true }) + '\n\n'));
           controller.close();
         } catch (e) {
