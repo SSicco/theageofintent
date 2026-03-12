@@ -52,6 +52,8 @@ In all of these cases: **stop. Do not guess.**
 
 **Language:** Plain HTML, CSS, and vanilla JavaScript for the frontend. Node.js for serverless functions. No frameworks, no build tools beyond `build.js`, no external dependencies unless explicitly specified in a design document.
 
+**Module format for serverless functions:** Netlify Functions that import the Anthropic SDK (or any other ES module dependency) **must use the `.mjs` file extension** to enable ES module syntax (`import`/`export`). The Anthropic SDK does not support CommonJS `require()`. Using `.js` with `require()` will fail at runtime.
+
 **Size:** Write the smallest amount of code that correctly implements what the design document specifies. Nothing more. Do not handle edge cases, add features, or optimise for scenarios that are not described in the design documents.
 
 **Comments:** Do not write explanatory comments in the code. The design documents carry the explanation. Code should be clean and uncommented. If something is genuinely unclear without a comment, that is a signal the design document needs to be improved — flag it rather than papering over it with a code comment.
