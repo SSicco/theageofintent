@@ -7,7 +7,9 @@
 
 ## What This Component Does
 
-A single Netlify Function that handles every reader message. It receives the reader's message, builds the prompt, calls the conversation agent, streams the response back, and persists the exchange. This is the central nervous system of the conversation feature — everything flows through it.
+A single Netlify Function (`functions/conversation.mjs`) that handles every reader message. It receives the reader's message, builds the prompt, calls the conversation agent, streams the response back, and persists the exchange. This is the central nervous system of the conversation feature — everything flows through it.
+
+**The function file must use the `.mjs` extension** (ESM module). The Anthropic SDK (`@anthropic-ai/sdk`) uses ES module exports and cannot be loaded with `require()`. Using `.js` with CommonJS `require()` will fail at runtime with a module format error.
 
 ---
 
@@ -163,8 +165,8 @@ data: {"done": true}
 data: {"ready": true}
 ```
 
-- `{"done": true}` — the agent's response is complete. The frontend can finalise the message display.
-- `{"ready": true}` — all post-response processing is complete (exchange persisted, summariser finished if applicable). The frontend can re-enable the input bar. The SSE connection stays open between `done` and `ready` to keep the frontend informed.
+- `{"done": true}` — the agent's response is complete. The frontend should finalise the message display (stop streaming cursor) but **must not re-enable the input bar or close the stream reader**. Post-response processing (persist + summarise) is still in progress.
+- `{"ready": true}` — all post-response processing is complete (exchange persisted, summariser finished if applicable). The frontend re-enables the input bar. This event may arrive several seconds after `done`, especially from exchange 9 onward when summarisation runs. The SSE connection stays open between `done` and `ready` — the frontend must keep its read loop running until the stream closes, otherwise `ready` will be missed.
 
 **Error response:** If the function fails before streaming begins, it returns a standard HTTP error. If the stream breaks mid-response, the connection closes — the frontend handles this by showing the baked-in error message.
 

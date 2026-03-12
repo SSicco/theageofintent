@@ -288,17 +288,26 @@ async function sendMessage(message) {
     appendAgentMessage(""); // create empty agent message element
     // ... read stream, append tokens to agent message ...
 
+    // Process SSE stream — read until the stream closes
+    const reader = response.body.getReader();
+    appendAgentMessage(""); // create empty agent message element
+    while (true) {
+      const result = await reader.read();
+      if (result.done) break; // stream closed
+
+      // parse each SSE data line:
+      // {"token": "..."} → append to agent message
+      // {"done": true}   → finalise message display, but keep reading
+      // {"ready": true}  → re-enable input, update exchange count
+    }
+
+    // If ready was never received, show the error message
+    if (waitingForReady) {
+      appendErrorMessage();
+    }
+
   } catch (error) {
     appendErrorMessage();
-  } finally {
-    isStreaming = false;
-    exchangeCount++;
-    lastMessageTime = Date.now();
-    // Input remains disabled until the backend signals that
-    // post-response processing is complete (persist + summarise).
-    // The SSE stream includes a "ready" event after all processing
-    // finishes. Only then is input re-enabled.
-    // enableInput() is called when the "ready" event arrives.
   }
 }
 ```
@@ -316,12 +325,17 @@ This means the page loads, immediately fires the opening request, and the reader
 
 ### SSE Stream Processing
 
-The frontend reads the SSE stream from the conversation endpoint:
+The frontend reads the SSE stream from the conversation endpoint. The stream contains three event types:
 
-- Each `data:` event contains a JSON object with either `{"token": "..."}` or `{"done": true}`.
-- Tokens are appended to the current agent message element as they arrive.
-- On `{"done": true}`, streaming ends and the input bar is re-enabled.
-- On connection close without `{"done": true}`, the stream is treated as broken — the error message is appended.
+- `{"token": "..."}` — a token to append to the current agent message.
+- `{"done": true}` — the agent's response is complete. Finalise the message display (stop the streaming cursor). **Do not re-enable the input bar yet** — the backend is still persisting the exchange and possibly running summarisation.
+- `{"ready": true}` — all post-response processing is complete. Re-enable the input bar.
+
+**Critical implementation detail:** The frontend must **not** break out of the stream read loop when it receives `{"done": true}`. The `ready` event arrives later in the same stream, after the backend finishes post-response processing (which may take several seconds for exchanges 9+). The read loop must continue until the stream itself closes (`reader.read()` returns `done: true` at the ReadableStream level). Breaking the loop early on the `done` event will cause the `ready` event to be missed, leaving the frontend in a `waitingForReady` state that falsely triggers the error message.
+
+After the stream closes, if `waitingForReady` is still true (meaning `ready` was never received), show the error message — this indicates a genuine backend failure.
+
+On connection close without either `done` or `ready`, the stream is treated as broken — the error message is appended.
 
 ---
 

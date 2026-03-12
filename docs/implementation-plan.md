@@ -200,7 +200,7 @@ The complete conversation UI — chat display, input handling, session state, SS
 
 The core Netlify Function that handles conversation — but only the simple path (exchanges 1–8, no prompt-building agents). This gets a working end-to-end conversation running.
 
-1. Write `functions/conversation.js` (or `functions/conversation/index.js` if Netlify requires a directory):
+1. Write `functions/conversation.mjs` (ESM module — the `.mjs` extension is required because the Anthropic SDK uses ES module imports; `.js` with `require()` will fail at runtime):
    - Receive POST request with `sessionId`, `conceptSlug`, `message`
    - Read the session blob from Netlify Blobs (or create a new one if it doesn't exist)
    - Read the instruction document from `content/instructions/{conceptSlug}.md` using `gray-matter` to strip the YAML frontmatter (the instruction files must be bundled via `included_files` in `netlify.toml` — see the conversation endpoint design doc)
@@ -280,7 +280,7 @@ The two Haiku agents that manage context for long conversations, integrated into
 
 The agent that runs when a session ends, plus the scheduled function that detects timed-out sessions.
 
-1. **Session-end agent function** (`functions/session-end.js` or similar):
+1. **Session-end agent function** (`functions/session-end.mjs` or similar — use `.mjs` for ESM compatibility):
    - Receives a session ID
    - Reads the complete session blob
    - Calls Haiku with the full session (all exchanges) in a single call
@@ -295,7 +295,7 @@ The agent that runs when a session ends, plus the scheduled function that detect
    - In the conversation endpoint, when the exchange count reaches 25, trigger the session-end agent after persisting the final exchange
    - This can be a direct function call or an internal invocation — the reader is not waiting
 
-3. **Scheduled function for timeouts** (`functions/session-cleanup.js` or similar):
+3. **Scheduled function for timeouts** (`functions/session-cleanup.mjs` or similar):
    - Runs every 15 minutes (configured in `netlify.toml`)
    - Scans session blobs, checks `lastActiveAt`
    - For sessions inactive > 1 hour where `sessionSummary` does not exist: triggers the session-end agent
